@@ -1,21 +1,17 @@
-import react, { SyntheticEvent, useState } from 'react';
+import { observer } from 'mobx-react-lite';
+import { SyntheticEvent, useState } from 'react';
 import { Button, Item, Label, Segment } from 'semantic-ui-react';
-import Activity from '../../../app/models/activity';
+import { useStore } from '../../../app/stores/store';
 
-interface Props {
-    activities: Activity[];
-    selectActivity: (id: string) => void;
-    deleteActivity: (id: string) => void;
-    submitting: boolean;
-}
-
-export default function ActivityList({activities, selectActivity, deleteActivity, submitting}: Props) {
+export default observer(function ActivityList() {
     const [currentTarget, setCurrentTarget] = useState('');
+    const {activityStore} = useStore();
+    const { selectActivity, loading, activities, deleteActivity } = activityStore;
 
     function handleDelete(event: SyntheticEvent<HTMLButtonElement>) {
         let targetId: string = event.currentTarget.name;
         setCurrentTarget(targetId);
-        deleteActivity(targetId)
+        deleteActivity(targetId);
     }
     return (
         <Segment>
@@ -31,7 +27,7 @@ export default function ActivityList({activities, selectActivity, deleteActivity
                             </Item.Description>
                             <Item.Extra>
                                 <Button onClick={()=>selectActivity(activity.id)} floated='right' content='View' color='blue' />
-                                <Button onClick={handleDelete} name={activity.id} loading={submitting && activity.id===currentTarget} floated='right' content='Delete' color='red' />
+                                <Button onClick={handleDelete} name={activity.id} loading={loading && activity.id===currentTarget} floated='right' content='Delete' color='red' />
                                 <Label basic content={activity.category} />
                             </Item.Extra>
                         </Item.Content>
@@ -40,4 +36,4 @@ export default function ActivityList({activities, selectActivity, deleteActivity
             </Item.Group>
         </Segment>
     )
-}
+});
