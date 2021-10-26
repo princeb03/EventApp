@@ -1,8 +1,30 @@
+import { Formik, Form, Field, FieldProps } from "formik";
 import { observer } from "mobx-react-lite";
-import { Fragment } from "react";
-import { Header, Segment, Comment, Form, Button } from "semantic-ui-react";
+import { Fragment, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { Header, Segment, Comment, Loader } from "semantic-ui-react";
+import { useStore } from "../../../app/stores/store";
+import * as Yup from 'yup';
+import { formatDistanceToNow } from "date-fns";
 
-export default observer(function ActivityDetailedChat() {
+interface Props {
+    activityId: string;
+
+}
+
+export default observer(function ActivityDetailedChat({activityId}: Props) {
+    const {commentStore} = useStore();
+
+    useEffect(() => {
+        if (activityId) {
+            commentStore.createHubConnection(activityId);
+        }
+
+        return () => {
+            commentStore.clearComments();
+        }
+    }, [commentStore, activityId]);
+
     return (
         <Fragment>
             <Segment
@@ -14,31 +36,58 @@ export default observer(function ActivityDetailedChat() {
             >
                 <Header>Chat about this event</Header>
             </Segment>
-            <Segment attached>
-                <Comment.Group>
-                    <Comment>
-                        <Comment.Avatar src='/assets/user.png' />
-                        <Comment.Content>
-                            <Comment.Author as='a'>User 1</Comment.Author>
-                            <Comment.Metadata>
-                                <div>Today at 12:00PM</div>
-                            </Comment.Metadata>
-                            <Comment.Text>This is a comment</Comment.Text>
-                            <Comment.Actions>
-                                <Comment.Action>Reply</Comment.Action>
-                            </Comment.Actions>
-                        </Comment.Content>
-                    </Comment>
+            <Segment attached clearing>
+                <Formik
+                    onSubmit={(values, {resetForm}) => 
+                        commentStore.addComment(values).then(() => resetForm())}
+                    initialValues={{body:''}}
+                    validationSchema={Yup.object({
+                        body: Yup.string().required()
+                    })}
+                >
+                    {({isSubmitting, isValid, handleSubmit}) => (
+                        <Form className="ui form">
+                            <Field name='body'>
+                                {(props: FieldProps) => (
+                                    <div style={{position:'relative'}}>
+                                        <Loader active={isSubmitting} />
+                                        <textarea
+                                            placeholder='Enter your comment (Enter to submit, SHIFT + enter for new line)'
+                                            rows={2}
+                                            {...props.field}
+                                            onKeyPress={e => {
+                                                if (e.key === 'Enter' && e.shiftKey) {
+                                                    return;
+                                                }
+                                                if (e.key === 'Enter' && !e.shiftKey) {
+                                                    e.preventDefault();
+                                                    isValid && handleSubmit();
+                                                }
 
-                    <Form reply>
-                        <Form.TextArea />
-                        <Button
-                            content='Add Reply'
-                            labelPosition='left'
-                            icon='edit'
-                            primary
-                        />
-                    </Form>
+                                            }} />
+                                    </div>
+                                )}
+                            </Field>
+                        </Form>
+                    )}
+                </Formik>
+                <Comment.Group>
+                    {commentStore.comments.map(comment => (
+                        <Comment key={comment.id}>
+                            <Comment.Avatar src={comment.image || '/assets/user.png'} />
+                            <Comment.Content>
+                                <Comment.Author as={Link} to={`/profiles/${comment.username}`}>{comment.displayName}</Comment.Author>
+                                <Comment.Metadata>
+                                    <div>{formatDistanceToNow(comment.createdAt)} ago</div>
+                                </Comment.Metadata>
+                                <Comment.Text style={{whiteSpace: "pre-wrap"}}>{comment.body}</Comment.Text>
+                            </Comment.Content>
+                        </Comment>
+                    ))}
+                    
+                    
+
+                    
                 </Comment.Group>
             </Segment>
         </Fragment>
