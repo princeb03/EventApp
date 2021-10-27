@@ -91,4 +91,21 @@ export default class ProfileStore {
             console.log(err);
         }
     }
+
+    updateFollowing = async (username: string, following: boolean) => {
+        this.loading = true;
+        try {
+            await agent.Profiles.updateFollowing(username);
+            store.activityStore.updateAttendeeFollowing(username);
+            runInAction(() => {
+                if (this.profile && this.profile.username !== store.userStore.user?.username) {
+                    following ? this.profile.followersCount++ : this.profile.followersCount--;
+                    this.profile.following = !this.profile.following;
+                }
+            });
+        } catch(err) {
+            console.log(err);
+            runInAction(() => this.loading = false);
+        }
+    }
 }
