@@ -10,7 +10,6 @@ import './app/layout/styles.css';
 import { StoreContext, store } from './app/stores/store';
 import { Router } from 'react-router-dom';
 import { createBrowserHistory } from 'history';
-
 export const history = createBrowserHistory();
 
 ReactDOM.render(
