@@ -14,3 +14,14 @@ export class PaginatedResult<T> {
         this.pagination = pagination;
     }
 }
+
+export class PagingParams {
+    pageSize;
+    pageNumber;
+
+    constructor(pageNumber = 1, pageSize = 2) {
+        this.pageSize = pageSize;
+        this.pageNumber = pageNumber;
+    }
+
+}
