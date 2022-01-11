@@ -35,10 +35,10 @@ export default observer(function ActivityDashboard() {
                     </Fragment>
                 ): (
                     <InfiniteScroll 
-                    pageStart={0}
-                    loadMore={handleGetNext}
-                    hasMore={!loadingNext && !!pagination && pagination.currentPage < pagination.totalPages}
-                    initialLoad={false}
+                        pageStart={0}
+                        loadMore={handleGetNext}
+                        hasMore={!loadingNext && !!pagination && pagination.currentPage < pagination.totalPages}
+                        initialLoad={false}
                     >
                         <ActivityList />
                     </InfiniteScroll>
